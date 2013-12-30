@@ -42,6 +42,7 @@ $langs->load("companies");
 $langs->load("users");
 $langs->load("other");
 $langs->load("commercial");
+$langs->load("contactfunction@contactfunction");
 
 $mesg=''; $error=0; $errors=array();
 
@@ -164,6 +165,8 @@ if (empty($reshook))
         $object->firstname		= $_POST["firstname"];
         $object->civilite_id	= $_POST["civilite_id"];
         $object->poste			= $_POST["poste"];
+        $object->function_code	= GETPOST('function_code');
+        $object->department_code= GETPOST('department_code');
         $object->address		= $_POST["address"];
         $object->zip			= $_POST["zipcode"];
         $object->town			= $_POST["town"];
@@ -262,6 +265,8 @@ if (empty($reshook))
             $object->firstname		= $_POST["firstname"];
             $object->civilite_id	= $_POST["civilite_id"];
             $object->poste			= $_POST["poste"];
+            $object->function_code	= GETPOST('function_code');
+            $object->department_code= GETPOST('department_code');
 
             $object->address		= $_POST["address"];
             $object->zip			= $_POST["zipcode"];
@@ -451,6 +456,17 @@ else
             print '</td></tr>';
 
             print '<tr><td>'.$langs->trans("PostOrFunction").'</td><td colspan="3"><input name="poste" type="text" size="50" maxlength="80" value="'.(isset($_POST["poste"])?$_POST["poste"]:$object->poste).'"></td>';
+
+            // Contact Function & department
+            print '<tr><td>'.$langs->trans("ContactFunction").'</td><td>';
+            $function_code = isset($_POST["function_code"])?$_POST["function_code"]:$object->function_code;
+            print $formcompany->select_contact_functions($function_code,'function_code',1);
+            print '</td>';
+            print '<td>'.$langs->trans("ContactDepartment").'</td><td>';
+            $department_code = isset($_POST["department_code"])?$_POST["department_code"]:$object->department_code;
+            print $formcompany->select_contact_departments($department_code,'department_code',1);
+            print '</td>';
+
 
             $colspan=3;
             if ($conf->use_javascript_ajax && $socid > 0) $colspan=2;
@@ -667,6 +683,16 @@ else
             print '</td></tr>';
 
             print '<tr><td>'.$langs->trans("PostOrFunction").'</td><td colspan="3"><input name="poste" type="text" size="50" maxlength="80" value="'.(isset($_POST["poste"])?$_POST["poste"]:$object->poste).'"></td></tr>';
+
+            // Contact Function & department
+            print '<tr><td>'.$langs->trans("ContactFunction").'</td><td>';
+            $function_code = isset($_POST["function_code"])?$_POST["function_code"]:$object->function_code;
+            print $formcompany->select_contact_functions($function_code,'function_code',1);
+            print '</td>';
+            print '<td>'.$langs->trans("ContactDepartment").'</td><td>';
+            $department_code = isset($_POST["department_code"])?$_POST["department_code"]:$object->department_code;
+            print $formcompany->select_contact_departments($department_code,'department_code',1);
+            print '</td>';
 
             // Address
             print '<tr><td>'.$langs->trans("Address");
@@ -893,6 +919,10 @@ else
 
         // Role
         print '<tr><td>'.$langs->trans("PostOrFunction").'</td><td colspan="3">'.$object->poste.'</td>';
+
+        // Function
+        print '<tr><td>'.$langs->trans("ContactFunction").'</td><td>'.$object->function_label.'</td>';
+        print '<td>'.$langs->trans("ContactDepartment").'</td><td>'.$object->department_label.'</td>';
 
         // Address
         print '<tr><td>'.$langs->trans("Address").'</td><td colspan="3">';

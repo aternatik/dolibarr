@@ -60,6 +60,10 @@ class Contact extends CommonObject
 	var $country;				// Label of country
 
     var $poste;                 // Position
+    var $function_code;			// Code of contact function
+    var $function_label;		// Label of contact function
+    var $department_code;		// Code of contact department
+    var $department_label;		// Label of contact department
 
 	var $socid;					// fk_soc
 	var $statut;				// 0=inactif, 1=actif
@@ -258,6 +262,8 @@ class Contact extends CommonObject
 		$sql .= ", fk_pays=".($this->country_id>0?$this->country_id:'NULL');
 		$sql .= ", fk_departement=".($this->state_id>0?$this->state_id:'NULL');
 		$sql .= ", poste='".$this->db->escape($this->poste)."'";
+		$sql .= ", function_code='".$this->db->escape($this->function_code)."'";
+		$sql .= ", department_code='".$this->db->escape($this->department_code)."'";
 		$sql .= ", fax='".$this->db->escape($this->fax)."'";
 		$sql .= ", email='".$this->db->escape($this->email)."'";
     $sql .= ", skype='".$this->db->escape($this->skype)."'";
@@ -514,11 +520,14 @@ class Contact extends CommonObject
 		$sql.= " d.nom as state, d.code_departement as state_code,";
 		$sql.= " u.rowid as user_id, u.login as user_login,";
 		$sql.= " s.nom as socname, s.address as socaddress, s.zip as soccp, s.town as soccity, s.default_lang as socdefault_lang";
+		$sql.= ", c.function_code, c.department_code, f.label as function_label, cd.label as department_label";
 		$sql.= " FROM ".MAIN_DB_PREFIX."socpeople as c";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_pays as p ON c.fk_pays = p.rowid";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_departements as d ON c.fk_departement = d.rowid";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."user as u ON c.rowid = u.fk_socpeople";
 		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON c.fk_soc = s.rowid";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_contact_function as f ON c.function_code = f.code";
+		$sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_contact_department as cd ON c.department_code = cd.code";
 		$sql.= " WHERE c.rowid = ". $id;
 
 		dol_syslog(get_class($this)."::fetch sql=".$sql);
@@ -553,6 +562,15 @@ class Contact extends CommonObject
 				$this->socid			= $obj->fk_soc;
 				$this->socname			= $obj->socname;
 				$this->poste			= $obj->poste;
+				$this->function_code	= $obj->function_code;
+				$this->function_label	= ($obj->function_code != $langs->trans('ContactFunction'.$obj->function_code) ? $langs->trans('ContactFunction'.$obj->function_code) : $langs->trans($obj->function_label));
+				// Si translation exists, we use it, otherwise we use default label in database
+
+				$this->function_label = ($langs->trans("ContactFunction".$obj->function_code)!="ContactFunction".$obj->function_code?$langs->trans("ContactFunction".$obj->function_code):$obj->function_label);	// $obj->nom is alreay in output charset (converted by database driver)
+
+
+				$this->department_code	= $obj->department_code;
+				$this->department_label	= $obj->department_label;
 				$this->statut			= $obj->statut;
 
 				$this->phone_pro		= trim($obj->phone);
@@ -996,6 +1014,90 @@ class Contact extends CommonObject
 		else return $langs->trans('ContactPublic');
 	}
 
+
+	/**
+	 *	Load into cache cache_contact_functions, array of contact function
+	 *
+	 *	@return     int             Nb of lines loaded, 0 if already loaded, <0 if ko
+	 */
+	function load_cache_contact_functions()
+	{
+		global $langs;
+
+		$langs->load("contact");
+
+		if (count($this->cache_contact_functions)) return 0;    // Cache already load
+
+		$sql = "SELECT c.code, c.label";
+		$sql.= " FROM ".MAIN_DB_PREFIX."c_contact_function as c";
+		$sql.= " ORDER BY lower(c.label) ASC";
+
+		dol_syslog(get_class($this).'::load_cache_contact_functions sql='.$sql, LOG_DEBUG);
+		$resql=$this->db->query($sql);
+		if ($resql)
+		{
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+
+			while ($i < $num)
+			{
+				$obj = $this->db->fetch_object($resql);
+
+				// Si traduction existe, on l'utilise, sinon on prend le libelle par defaut
+				$label=($obj->code != $langs->trans($obj->code) ? $langs->trans($obj->code) : $langs->trans($obj->label));
+				$this->cache_contact_functions[$obj->code] = $label;
+				$i++;
+			}
+			return $num;
+		}
+		else
+		{
+			dol_print_error($this->db);
+			return -1;
+		}
+	}
+
+	/**
+	 *	Load into cache cache_contact_departments, array of contact department
+	 *
+	 *	@return     int             Nb of lines loaded, 0 if already loaded, <0 if ko
+	 */
+	function load_cache_contact_departments()
+	{
+		global $langs;
+
+		$langs->load("contactfunction@contactfunction");
+
+		if (count($this->cache_contact_departments)) return 0;    // Cache already load
+
+		$sql = "SELECT c.code, c.label";
+		$sql.= " FROM ".MAIN_DB_PREFIX."c_contact_department as c";
+		$sql.= " ORDER BY lower(c.label) ASC";
+
+		dol_syslog(get_class($this).'::load_cache_contact_departments sql='.$sql, LOG_DEBUG);
+		$resql=$this->db->query($sql);
+		if ($resql)
+		{
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+
+			while ($i < $num)
+			{
+				$obj = $this->db->fetch_object($resql);
+
+				// Si traduction existe, on l'utilise, sinon on prend le libelle par defaut
+				$label=($obj->code != $langs->trans($obj->code) ? $langs->trans($obj->code) : $langs->trans($obj->label));
+				$this->cache_contact_departments[$obj->code] = $label;
+				$i++;
+			}
+			return $num;
+		}
+		else
+		{
+			dol_print_error($this->db);
+			return -1;
+		}
+	}
 
 	/**
      *  Initialise an instance with random values.

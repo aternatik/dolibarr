@@ -203,7 +203,7 @@ class FormCompany
 	 *    un code donnee mais dans ce cas, le champ pays differe).
 	 *    Ainsi les liens avec les departements se font sur un departement independemment de son nom.
 	 *
-	 *    @param	string	$selected        	Code state preselected (mus be state id) 
+	 *    @param	string	$selected        	Code state preselected (mus be state id)
 	 *    @param    string	$country_codeid    	Country code or id: 0=list for all countries, otherwise country code or country rowid to show
 	 *    @param    string	$htmlname			Id of department
 	 * 	  @return	string						String with HTML select
@@ -716,6 +716,85 @@ class FormCompany
         return $out;
     }
 
+
+    /**
+     *	Return list of functions of contacts
+     *
+     *	@param	string		$selected		Preselected type
+     *	@param  string		$htmlname		Name of field in form
+     * 	@param	int			$showempty		Add an empty field
+     * 	@return	void
+     */
+    function select_contact_functions($selected='',$htmlname='type',$showempty=0)
+    {
+    	global $user, $langs;
+
+    	dol_syslog(get_class($this)."::select_contact_functions ".$selected.", ".$htmlname, LOG_DEBUG);
+
+    	$contactstat = new Contact($this->db);
+    	$contactstat->load_cache_contact_functions();
+
+    	print '<select class="flat" name="'.$htmlname.'">';
+    	if ($showempty)
+    	{
+    		print '<option value="-1"';
+    		if ($selected == -1) print ' selected="selected"';
+    		print '>&nbsp;</option>';
+    	}
+
+    	foreach($contactstat->cache_contact_functions as $key => $value)
+    	{
+    		print '<option value="'.$key.'"';
+    		if ($key == $selected) print ' selected="selected"';
+    		print '>';
+    		print $value;
+    		print '</option>';
+    	}
+
+    	print '</select>';
+    	if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionnarySetup"),1);
+    }
+
+    /**
+     *	Return list of departments of contacts
+     *
+     *	@param	string		$selected		Preselected type
+     *	@param  string		$htmlname		Name of field in form
+     * 	@param	int			$showempty		Add an empty field
+     * 	@return	void
+     */
+    function select_contact_departments($selected='',$htmlname='department_code',$showempty=0)
+    {
+    	global $user, $langs;
+
+    	dol_syslog(get_class($this)."::select_contact_functions ".$selected.", ".$htmlname, LOG_DEBUG);
+
+    	$contactstat = new Contact($this->db);
+    	$contactstat->load_cache_contact_departments();
+
+    	print '<select class="flat" name="'.$htmlname.'">';
+    	if ($showempty)
+    	{
+    		print '<option value="-1"';
+    		if ($selected == -1) print ' selected="selected"';
+    		print '>&nbsp;</option>';
+    	}
+
+    	if(count($contactstat->cache_contact_departments) > 0)
+    	{
+	    	foreach($contactstat->cache_contact_departments as $key => $value)
+	    	{
+	    		print '<option value="'.$key.'"';
+	    		if ($key == $selected) print ' selected="selected"';
+	    		print '>';
+	    		print $value;
+	    		print '</option>';
+	    	}
+    	}
+
+    	print '</select>';
+    	if ($user->admin) print info_admin($langs->trans("YouCanChangeValuesForThisListFromDictionnarySetup"),1);
+    }
 }
 
 ?>
