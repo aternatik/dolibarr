@@ -88,6 +88,7 @@ $urlwithroot=$urlwithouturlroot.DOL_URL_ROOT;			// This is to use external domai
 
 $urlok=$urlwithroot.'/public/paybox/paymentok.php?';
 $urlko=$urlwithroot.'/public/paybox/paymentko.php?';
+$urlipn=$urlwithroot.'/public/paybox/payment_ipn.php';
 
 // Complete urls
 $SOURCE=GETPOST("source",'alpha');
@@ -143,7 +144,7 @@ if (GETPOST("action") == 'dopayment')
 	{
 		dol_syslog("newpayment.php call paybox api and do redirect", LOG_DEBUG);
 
-		print_paybox_redirect($PRICE, $conf->currency, $email, $urlok, $urlko, $FULLTAG);
+		print_paybox_redirect($PRICE, $conf->currency, $email, $urlok, $urlko, $FULLTAG,$urlipn);
 
 		session_destroy();
 		exit;
@@ -314,7 +315,7 @@ if (GETPOST("source") == 'order' && $valid)
     if (GETPOST("amount",'int')) $amount=GETPOST("amount",'int');
     $amount=price2num($amount);
 
-	$fulltag='IR='.$order->ref.'.TPID='.$order->thirdparty->id;
+	$fulltag='OR='.$order->ref.'.TPID='.$order->thirdparty->id;
 	//$fulltag.='.TP='.strtr($order->thirdparty->name,"-"," ");    We disable this because url that will contains FULLTAG must be lower than 150
 	if (! empty($TAG)) { $tag=$TAG; $fulltag.='.TAG='.$TAG; }
 	$fulltag=dol_string_unaccent($fulltag);

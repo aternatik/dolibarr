@@ -81,9 +81,10 @@ function llxFooterPayBox()
  * @param   string	$urlok		Url to go back if payment is OK
  * @param   string	$urlko		Url to go back if payment is KO
  * @param   string	$TAG		Tag
+ * @param	string	$urlipn		Url to use for IPN (Instant Payment Notification)
  * @return  int              	1 if OK, -1 if ERROR
  */
-function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
+function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG,$urlipn='')
 {
 	global $conf, $langs, $db;
 
@@ -154,6 +155,7 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
     $IBS_EFFECTUE=$urlok;
     $IBS_ANNULE=$urlko;
     $IBS_REFUSE=$urlko;
+    $IBS_REPONDRE_A=$urlipn;
     $IBS_BKGD="#FFFFFF";
     $IBS_WAIT="2000";
 	$IBS_LANG="GBR"; 	// By default GBR=english (FRA, GBR, ESP, ITA et DEU...)
@@ -200,6 +202,7 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
 	"&PBX_CMD=".$IBS_CMD.
 	"&PBX_PORTEUR=".$IBS_PORTEUR.
 	"&PBX_RETOUR=".$IBS_RETOUR.
+	//"&PBX_REPONDRE_A=".$IBS_REPONDRE_A.
 	//"&PBX_EFFECTUE=".$IBS_EFFECTUE.
 	//"&PBX_ANNULE=".$IBS_ANNULE.
 	//"&PBX_REFUSE=".$IBS_REFUSE.
@@ -223,7 +226,6 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
 	// suivante
 	// print_r(hash_algos());
 	$hmac = strtoupper(hash_hmac('sha512', $msg, $binKey));
-
 
     header("Content-type: text/html; charset=".$conf->file->character_set_client);
 
@@ -269,6 +271,7 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
     print '<input type="hidden" name="PBX_CMD" value="'.$IBS_CMD.'">'."\n";
     print '<input type="hidden" name="PBX_PORTEUR" value="'.$IBS_PORTEUR.'">'."\n";
     print '<input type="hidden" name="PBX_RETOUR" value="'.$IBS_RETOUR.'">'."\n";
+    // TODO: IPN print '<input type="hidden" name="PBX_REPONDRE_A" value="'.$IBS_REPONDRE_A.'">'."\n";
     //print '<input type="hidden" name="PBX_EFFECTUE" value="'.$IBS_EFFECTUE.'">'."\n";
     //print '<input type="hidden" name="PBX_ANNULE" value="'.$IBS_ANNULE.'">'."\n";
     //print '<input type="hidden" name="PBX_REFUSE" value="'.$IBS_REFUSE.'">'."\n";
