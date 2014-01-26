@@ -35,7 +35,7 @@ $langs->load("paybox");
 
 if (!$user->admin)
   accessforbidden();
-  
+
 $action = GETPOST('action','alpha');
 
 
@@ -53,6 +53,10 @@ if ($action == 'setvalue' && $user->admin)
 	if (! $result > 0) $error++;
 	$result=dolibarr_set_const($db, "PAYBOX_PBX_IDENTIFIANT",GETPOST('PAYBOX_PBX_IDENTIFIANT','alpha'),'chaine',0,'',$conf->entity);
 	if (! $result > 0) $error++;
+	$result=dolibarr_set_const($db, "PAYBOX_IBS_HMAC",GETPOST('PAYBOX_IBS_HMAC'),'chaine',0,'',$conf->entity);
+	if (! $result > 0) $error++;
+	$result=dolibarr_set_const($db, "PAYBOX_PBX_RETOUR",GETPOST('PAYBOX_PBX_RETOUR'),'chaine',0,'',$conf->entity);
+	if (! $result > 0) $error++;
     $result=dolibarr_set_const($db, "PAYBOX_CREDITOR",GETPOST('PAYBOX_CREDITOR','alpha'),'chaine',0,'',$conf->entity);
     if (! $result > 0) $error++;
 	$result=dolibarr_set_const($db, "PAYBOX_CSS_URL",GETPOST('PAYBOX_CSS_URL','alpha'),'chaine',0,'',$conf->entity);
@@ -63,7 +67,7 @@ if ($action == 'setvalue' && $user->admin)
 	if (! $result > 0) $error++;
 	$result=dolibarr_set_const($db, "PAYBOX_PAYONLINE_SENDEMAIL",GETPOST('PAYBOX_PAYONLINE_SENDEMAIL'),'chaine',0,'',$conf->entity);
 	if (! $result > 0) $error++;
-	
+
     if (! $error)
   	{
   		$db->commit();
@@ -87,6 +91,8 @@ $IBS_RANG="99";         // Rang test
 if (empty($conf->global->PAYBOX_IBS_RANG)) $conf->global->PAYBOX_IBS_RANG=$IBS_RANG;
 $IBS_DEVISE="978";      // Euro
 if (empty($conf->global->PAYBOX_IBS_DEVISE)) $conf->global->PAYBOX_IBS_DEVISE=$IBS_DEVISE;
+$PBX_RETOUR="montant:M;ref:R;auto:A;trans:T;erreur:E;sign:K";      // See integration manual for codes
+if (empty($conf->global->PAYBOX_PBX_RETOUR)) $conf->global->PAYBOX_PBX_RETOUR=$PBX_RETOUR;
 
 llxHeader();
 
@@ -137,6 +143,20 @@ print '<tr '.$bc[$var].'><td>';
 print '<span class="fieldrequired">'.$langs->trans("PAYBOX_PBX_IDENTIFIANT").'</span></td><td>';
 print '<input size="32" type="text" name="PAYBOX_PBX_IDENTIFIANT" value="'.$conf->global->PAYBOX_PBX_IDENTIFIANT.'">';
 print '<br>'.$langs->trans("Example").': 2 ('.$langs->trans("Test").')';
+print '</td></tr>';
+
+$var=!$var;
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("PAYBOX_HMAC").'</td><td>';
+print '<input size="64" type="text" name="PAYBOX_IBS_HMAC" value="'.$conf->global->PAYBOX_IBS_HMAC.'">';
+print '<br>'.$langs->trans("Example").': AZERHL4...';
+print '</td></tr>';
+
+$var=!$var;
+print '<tr '.$bc[$var].'><td>';
+print $langs->trans("PAYBOX_PBX_RETOUR").'</td><td>';
+print '<input size="64" type="text" name="PAYBOX_PBX_RETOUR" value="'.$conf->global->PAYBOX_PBX_RETOUR.'">';
+print '<br>'.$langs->trans("Example").': montant:M;ref:R;auto:A;trans:T;erreur:E;sign:K';
 print '</td></tr>';
 
 $var=true;

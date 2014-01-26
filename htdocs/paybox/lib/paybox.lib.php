@@ -104,6 +104,12 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
 	if ($conf->global->PAYBOX_CGI_URL_V1) $URLPAYBOX=$conf->global->PAYBOX_CGI_URL_V1;
 	if ($conf->global->PAYBOX_CGI_URL_V2) $URLPAYBOX=$conf->global->PAYBOX_CGI_URL_V2;
 
+	$IBS_HMAC="";
+	if ($conf->global->PAYBOX_IBS_HMAC) $IBS_HMAC=$conf->global->PAYBOX_IBS_HMAC;
+
+	$PBX_RETOUR="";
+	if ($conf->global->PAYBOX_IBS_HMAC) $PBX_RETOUR=$conf->global->PAYBOX_PBX_RETOUR;
+
 	if (empty($IBS_DEVISE))
 	{
 		dol_print_error('',"Paybox setup param PAYBOX_IBS_DEVISE not defined");
@@ -124,13 +130,23 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
 		dol_print_error('',"Paybox setup param PAYBOX_IBS_RANG not defined");
 		return -1;
 	}
+	if (empty($IBS_HMAC))
+	{
+		dol_print_error('',"Paybox setup param PAYBOX_IBS_HMAC not defined");
+		return -1;
+	}
+	if (empty($PBX_RETOUR))
+	{
+		dol_print_error('',"Paybox setup param PAYBOX_PBX_RETOUR not defined");
+		return -1;
+	}
 
 	// Definition des parametres vente produit pour paybox
     $IBS_CMD=$TAG;
     $IBS_TOTAL=$PRICE*100;     	// En centimes
-    $IBS_MODE=1;            	// Mode formulaire
+    //$IBS_MODE=1;            	// Mode formulaire
     $IBS_PORTEUR=$EMAIL;
-	$IBS_RETOUR="montant:M;ref:R;auto:A;trans:T";   // Format des parametres du get de validation en reponse (url a definir sous paybox)
+	$IBS_RETOUR=$PBX_RETOUR;   // Format des parametres du get de validation en reponse (url a definir sous paybox)
     //$IBS_TXT="<center><b>".$langsiso->trans("YouWillBeRedirectedOnPayBox")."</b><br><i>".$langsiso->trans("PleaseBePatient")."...</i><br></center>";
     $IBS_TXT=' ';	// Use a space
     $IBS_BOUTPI=$langs->trans("Wait");
@@ -150,9 +166,10 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
 	$IBS_OUTPUT='E';
 	$PBX_SOURCE='HTML';
 	$PBX_TYPEPAIEMENT='CARTE';
+	$PBX_HASH="SHA512";
 
     dol_syslog("Soumission Paybox", LOG_DEBUG);
-    dol_syslog("IBS_MODE: $IBS_MODE", LOG_DEBUG);
+    //dol_syslog("IBS_MODE: $IBS_MODE", LOG_DEBUG);
     dol_syslog("IBS_SITE: $IBS_SITE", LOG_DEBUG);
     dol_syslog("IBS_RANG: $IBS_RANG", LOG_DEBUG);
     dol_syslog("IBS_TOTAL: $IBS_TOTAL", LOG_DEBUG);
@@ -170,6 +187,43 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
     dol_syslog("PBX_IDENTIFIANT: $PBX_IDENTIFIANT", LOG_DEBUG);
     dol_syslog("PBX_SOURCE: $PBX_SOURCE", LOG_DEBUG);
     dol_syslog("PBX_TYPEPAIEMENT: $PBX_TYPEPAIEMENT", LOG_DEBUG);
+
+    // On récupère la date au format ISO-8601
+	$dateTime = date("c");
+	// On crée la chaîne à hacher sans URLencodage
+	$msg = "PBX_SITE=".$IBS_SITE.
+	//"&PBX_MODE=".$IBS_MODE.
+	"&PBX_RANG=".$IBS_RANG.
+	"&PBX_IDENTIFIANT=".$PBX_IDENTIFIANT.
+	"&PBX_TOTAL=".$IBS_TOTAL.
+	"&PBX_DEVISE=".$IBS_DEVISE.
+	"&PBX_CMD=".$IBS_CMD.
+	"&PBX_PORTEUR=".$IBS_PORTEUR.
+	"&PBX_RETOUR=".$IBS_RETOUR.
+	//"&PBX_EFFECTUE=".$IBS_EFFECTUE.
+	//"&PBX_ANNULE=".$IBS_ANNULE.
+	//"&PBX_REFUSE=".$IBS_REFUSE.
+	//"&PBX_TXT=".$IBS_TXT.
+	//"&PBX_BKGD=".$IBS_BKGD.
+	//"&PBX_WAIT=".$IBS_WAIT.
+	//"&PBX_LANGUE=".$IBS_LANG.
+	//"&PBX_OUTPUT=".$IBS_OUTPUT.
+	//"&PBX_SOURCE=".$PBX_SOURCE.
+	//"&PBX_TYPEPAIEMENT=".$PBX_TYPEPAIEMENT.
+	"&PBX_HASH=".$PBX_HASH.
+	"&PBX_TIME=".$dateTime;
+
+	// On récupère la clé secrète HMAC (stockée dans une base de données par exemple) et que l’on renseigne dans la variable $keyTest;
+	// Si la clé est en ASCII, On la transforme en binaire
+	$binKey = pack("H*", $IBS_HMAC);
+	// On calcule l’empreinte (à renseigner dans le paramètre PBX_HMAC) grâce à la fonction hash_hmac et
+	// la clé binaire
+	// On envoie via la variable PBX_HASH l'algorithme de hachage qui a été utilisé (SHA512 dans ce cas)
+	// Pour afficher la liste des algorithmes disponibles sur votre environnement, décommentez la ligne
+	// suivante
+	// print_r(hash_algos());
+	$hmac = strtoupper(hash_hmac('sha512', $msg, $binKey));
+
 
     header("Content-type: text/html; charset=".$conf->file->character_set_client);
 
@@ -206,26 +260,28 @@ function print_paybox_redirect($PRICE,$CURRENCY,$EMAIL,$urlok,$urlko,$TAG)
 
     // For Paybox V2 (PBX_xxx)
     print '<!-- Param for Paybox v2 -->'."\n";
-    print '<input type="hidden" name="PBX_IDENTIFIANT" value="'.$PBX_IDENTIFIANT.'">'."\n";
-    print '<input type="hidden" name="PBX_MODE" value="'.$IBS_MODE.'">'."\n";
     print '<input type="hidden" name="PBX_SITE" value="'.$IBS_SITE.'">'."\n";
     print '<input type="hidden" name="PBX_RANG" value="'.$IBS_RANG.'">'."\n";
+    print '<input type="hidden" name="PBX_IDENTIFIANT" value="'.$PBX_IDENTIFIANT.'">'."\n";
+    //print '<input type="hidden" name="PBX_MODE" value="'.$IBS_MODE.'">'."\n";
     print '<input type="hidden" name="PBX_TOTAL" value="'.$IBS_TOTAL.'">'."\n";
     print '<input type="hidden" name="PBX_DEVISE" value="'.$IBS_DEVISE.'">'."\n";
     print '<input type="hidden" name="PBX_CMD" value="'.$IBS_CMD.'">'."\n";
     print '<input type="hidden" name="PBX_PORTEUR" value="'.$IBS_PORTEUR.'">'."\n";
     print '<input type="hidden" name="PBX_RETOUR" value="'.$IBS_RETOUR.'">'."\n";
-    print '<input type="hidden" name="PBX_EFFECTUE" value="'.$IBS_EFFECTUE.'">'."\n";
-    print '<input type="hidden" name="PBX_ANNULE" value="'.$IBS_ANNULE.'">'."\n";
-    print '<input type="hidden" name="PBX_REFUSE" value="'.$IBS_REFUSE.'">'."\n";
-    print '<input type="hidden" name="PBX_TXT" value="'.$IBS_TXT.'">'."\n";
-    print '<input type="hidden" name="PBX_BKGD" value="'.$IBS_BKGD.'">'."\n";
-    print '<input type="hidden" name="PBX_WAIT" value="'.$IBS_WAIT.'">'."\n";
-    print '<input type="hidden" name="PBX_LANGUE" value="'.$IBS_LANG.'">'."\n";
-    print '<input type="hidden" name="PBX_OUTPUT" value="'.$IBS_OUTPUT.'">'."\n";
-    print '<input type="hidden" name="PBX_SOURCE" value="'.$PBX_SOURCE.'">'."\n";
-    print '<input type="hidden" name="PBX_TYPEPAIEMENT" value="'.$PBX_TYPEPAIEMENT.'">'."\n";
-
+    //print '<input type="hidden" name="PBX_EFFECTUE" value="'.$IBS_EFFECTUE.'">'."\n";
+    //print '<input type="hidden" name="PBX_ANNULE" value="'.$IBS_ANNULE.'">'."\n";
+    //print '<input type="hidden" name="PBX_REFUSE" value="'.$IBS_REFUSE.'">'."\n";
+    //print '<input type="hidden" name="PBX_TXT" value="'.$IBS_TXT.'">'."\n";
+    //print '<input type="hidden" name="PBX_BKGD" value="'.$IBS_BKGD.'">'."\n";
+    //print '<input type="hidden" name="PBX_WAIT" value="'.$IBS_WAIT.'">'."\n";
+    //print '<input type="hidden" name="PBX_LANGUE" value="'.$IBS_LANG.'">'."\n";
+    //print '<input type="hidden" name="PBX_OUTPUT" value="'.$IBS_OUTPUT.'">'."\n";
+    //print '<input type="hidden" name="PBX_SOURCE" value="'.$PBX_SOURCE.'">'."\n";
+    //print '<input type="hidden" name="PBX_TYPEPAIEMENT" value="'.$PBX_TYPEPAIEMENT.'">'."\n";
+    print '<input type="hidden" name="PBX_HASH" value="'.$PBX_HASH.'">'."\n";
+    print '<input type="hidden" name="PBX_TIME" value="'.$dateTime.'">'."\n";
+	print '<input type="hidden" name="PBX_HMAC" value="'.$hmac.'">'."\n";
     print '</form>'."\n";
 
     // Formulaire pour module Paybox v2 (PBX_xxx)
