@@ -4,6 +4,7 @@
  * Copyright (c) 2010      Juanjo Menent		<jmenent@2byte.es>
  * Copyright (c) 2013      Charles-Fr BENKE		<charles.fr@benke.fr>
  * Copyright (C) 2013      Cédric Salvador      <csalvador@gpcsolutions.fr>
+ * Copyright (c) 2014       Marcos García       <marcosgdf@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -257,7 +258,7 @@ class FormFile
      */
     function showdocuments($modulepart,$modulesubdir,$filedir,$urlsource,$genallowed,$delallowed=0,$modelselected='',$allowgenifempty=1,$forcenomultilang=0,$iconPDF=0,$maxfilenamelength=28,$noform=0,$param='',$title='',$buttonlabel='',$codelang='',$morepicto='')
     {
-        global $langs,$conf,$hookmanager;
+        global $langs,$conf,$user,$hookmanager;
         global $bc;
 
         // filedir = $conf->...->dir_ouput."/".get_exdir(id)
@@ -482,7 +483,7 @@ class FormFile
 
             // Language code (if multilang)
             $out.= '<th align="center" class="formdoc liste_titre">';
-            if (($allowgenifempty || (is_array($modellist) && count($modellist) > 0)) && $conf->global->MAIN_MULTILANGS && ! $forcenomultilang)
+            if (($allowgenifempty || (is_array($modellist) && count($modellist) > 0)) && $conf->global->MAIN_MULTILANGS && ! $forcenomultilang && (! empty($modellist) || $showempty))
             {
                 include_once DOL_DOCUMENT_ROOT.'/core/class/html.formadmin.class.php';
                 $formadmin=new FormAdmin($this->db);
@@ -508,6 +509,7 @@ class FormFile
                	$genbutton.= ' '.img_warning($langs->transnoentitiesnoconv("WarningNoDocumentModelActivated"));
             }
             if (! $allowgenifempty && ! is_array($modellist) && empty($modellist) && empty($conf->dol_no_mouse_hover) && $modulepart != 'unpaid') $genbutton='';
+            if (empty($modellist) && ! $showempty) $genbutton='';
             $out.= $genbutton;
             $out.= '</th>';
 
@@ -554,9 +556,12 @@ class FormFile
 
 					$out.= "<tr ".$bc[$var].">";
 
+					$documenturl = DOL_URL_ROOT.'/document.php';
+					if (isset($conf->global->DOL_URL_ROOT_DOCUMENT_PHP)) $documenturl=$conf->global->DOL_URL_ROOT_DOCUMENT_PHP;
+
 					// Show file name with link to download
 					$out.= '<td class="nowrap">';
-					$out.= '<a data-ajax="false" href="'.DOL_URL_ROOT . '/document.php?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'"';
+					$out.= '<a data-ajax="false" href="'.$documenturl.'?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'"';
 					$mime=dol_mimetype($relativepath,'',0);
 					if (preg_match('/text/',$mime)) $out.= ' target="_blank"';
 					$out.= ' target="_blank">';
@@ -612,7 +617,7 @@ class FormFile
               		}
 				}
 
-			 	if (count($file_list) == 0)
+			 	if (count($file_list) == 0 && $headershown)
 	            {
     	        	$out.='<tr><td colspan="3">'.$langs->trans("None").'</td></tr>';
         	    }
@@ -796,9 +801,10 @@ class FormFile
 					// Preview
 					if (empty($useinecm))
 					{
+						$fileinfo = pathinfo($file['name']);
+
 						print '<td align="center">';
-						$tmp=explode('.',$file['name']);
-						$minifile=$tmp[0].'_mini.'.strtolower($tmp[1]);	// Thumbs are created with filename in lower case
+						$minifile=$fileinfo['filename'].'_mini.'.$fileinfo['extension'];	// Thumbs are created with filename in lower case
 						if (image_format_supported($file['name']) > 0) print '<img border="0" height="'.$maxheightmini.'" src="'.DOL_URL_ROOT.'/viewimage.php?modulepart='.$modulepart.'&file='.urlencode($relativepath.'thumbs/'.$minifile).'" title="">';
 						else print '&nbsp;';
 						print '</td>';

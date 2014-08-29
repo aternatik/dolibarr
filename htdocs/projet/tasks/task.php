@@ -199,6 +199,8 @@ if ($id > 0 || ! empty($ref))
 		$result=$projectstatic->fetch($object->fk_project);
 		if (! empty($projectstatic->socid)) $projectstatic->societe->fetch($projectstatic->socid);
 
+		$object->project = dol_clone($projectstatic);
+
 		$userWrite  = $projectstatic->restrictedProjectArea($user,'write');
 
 		if (! empty($withproject))
@@ -267,7 +269,7 @@ if ($id > 0 || ! empty($ref))
 		}
 		else
 		{
-		print '<a class="butActionRefused" href="#" title="'.$langs->trans("NoPermission").'">'.$langs->trans('AddTask').'</a>';
+		print '<a class="butActionRefused" href="#" title="'.$langs->trans("NotEnoughPermissions").'">'.$langs->trans('AddTask').'</a>';
 		}
 
 		print '</div>';
