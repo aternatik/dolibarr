@@ -2,6 +2,29 @@
 English Dolibarr ChangeLog
 --------------------------------------------------------------
 
+***** ChangeLog for 3.5.5 compared to 3.5.4 *****
+Fix: Holiday module was broken. Initializaion of amount of holidays failed.
+Fix: [ bug #1523 ] suite bug #1334 : filtre et ordre de tri conjoints ne s'appliquent pas.
+Fix: Fusion PDF button on unpaid invoice is no more displayed.
+Fix: Unpaid invoice launch fusion PDF action even if it is only search (with enter keyboard input instead of lens click).
+Fix: Pb when showing log list of holiday module with some mysql versions.
+Fix: Error with bad timezone pushed by some browsers.
+Fix: shipping list SQL request was not filtering on shipping element
+Fix: debian package provided by dolibarr team must use embedded libraries.
+Fix: [ bug #1528 ] Leopard Services numeration module description is not translated.
+Fix: [ bug #1523 ] suite bug #1334 : filtre et ordre de tri conjoints ne s'appliquent pas.
+Fix: [ bug #1534 ] Unknown error when deleting a product photo under special circumstances.
+Fix: Update impayees.php
+Fix: Link product, In list view and label product.
+Fix: visible task into area "time" for "My task" must limit task to tasks i am assigned to.
+Fix: When disabled, all fields to add time into task line must be disabled.
+Fix: Missing include files.lib.php in some pages to use dol_delete_recursive.
+Fix: [ bug #1558 ] Product/service edit page title shows new Ref instead of old ref.
+Fix: [ bug #1553 ] Saving User displays setup removes menu.
+Fix: [ bug #1544 ] Can remove date from invoice
+Fix: list event view lost type event filter
+Fix: Add code save on create event
+
 ***** ChangeLog for 3.5.4 compared to 3.5.3 *****
 Fix: Hide title of event when agenda module disabled.
 Fix: When using option MAIN_MAIL_ALLOW_SENDMAIL_F, a mail was sent to sender.
@@ -318,6 +341,7 @@ Fix: Add a limit into list to avoid browser to hang when database is too large.
 Fix: [ bug #1212 ] 'jqueryFileTree.php' directory traversal vulnerability
 Fix: Agenda and Banks module were not working with multicompany module
 Fix: [ bug #1317 ] Removing a category does not remove all child categories
+Fix: [ bug #1380 ] Customer invoices are not grouped in company results report.
 
 ***** ChangeLog for 3.4.2 compared to 3.4.1 *****
 Fix: field's problem into company's page (RIB).
