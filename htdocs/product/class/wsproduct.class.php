@@ -17,6 +17,12 @@
  */
 
 require_once DOL_DOCUMENT_ROOT . '/core/class/DolWS.class.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/ws.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/core/lib/functions.lib.php';
+require_once DOL_DOCUMENT_ROOT . '/user/class/user.class.php';
+require_once DOL_DOCUMENT_ROOT . '/product/class/product.class.php';
+require_once(DOL_DOCUMENT_ROOT."/categories/class/categorie.class.php");
+
 /**
  * Class for Dolibarr product webservices
  *
@@ -93,7 +99,7 @@ class wsProduct extends DolWS
 
                     // Create
                     $objectresp = array(
-                        'result'=>array('result_code'=>'OK', 'result_label'=>''),
+                        'result'=>parent::array_to_object(array('result_code'=>'OK', 'result_label'=>'')),
                         'product'=>array(
                             'id' => $product->id,
                             'ref' => $product->ref,

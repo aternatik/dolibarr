@@ -49,8 +49,8 @@ class DolWS
             null,
             array(
                 'uri' => $this->ns,
-                'encoding' => $this->encoding, 
-                'features' => SOAP_USE_XSI_ARRAY_TYPE + SOAP_SINGLE_ELEMENT_ARRAYS
+                'encoding' => $this->encoding 
+                //'features' => SOAP_USE_XSI_ARRAY_TYPE + SOAP_SINGLE_ELEMENT_ARRAYS
             )
         );
     }
@@ -70,5 +70,22 @@ class DolWS
      */
     public function processRequest() {
         $this->soap->handle();
+    }
+    
+    /**
+     * 
+     * @param array $array  Datas
+     * @return type
+     */
+    static public function array_to_object(array $array)
+    {
+        foreach($array as $key => $value)
+        {
+            if(is_array($value))
+            {
+                $array[$key] = self::array_to_object($value);
+            }
+        }
+        return (object)$array;
     }
 }

@@ -26,13 +26,7 @@
 set_include_path($_SERVER['DOCUMENT_ROOT'].'/htdocs');
 
 require_once '../master.inc.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/ws.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
-require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
-
-require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/wsproduct.class.php';
-require_once(DOL_DOCUMENT_ROOT."/categories/class/categorie.class.php");
 
 dol_syslog("Call Dolibarr webservices interfaces");
 
