@@ -22,6 +22,7 @@ require_once DOL_DOCUMENT_ROOT . '/core/class/DolWS.class.php';
 
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/ws.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 
 
@@ -210,7 +211,7 @@ class wsOther extends DolWS
                     // Create return object
                     $objectresp = array(
                         'result'=>array('result_code'=>'OK', 'result_label'=>''),
-                        'document'=>$objectret
+                        'document'=> (object) $objectret
                     );
                 }
                 else

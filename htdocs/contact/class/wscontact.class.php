@@ -48,7 +48,7 @@ class wsContact extends DolWS
      * @param	string		$ref_ext		Ref external of object
      * @return	mixed
      */
-    function getContact($authentication,$id,$ref_ext)
+    function getContact($authentication,$id,$ref_ext="")
     {
         global $db,$conf,$langs;
 
@@ -135,7 +135,7 @@ class wsContact extends DolWS
                     // Create
                     $objectresp = array(
                         'result'=>array('result_code'=>'OK', 'result_label'=>''),
-                        'contact'=>$contact_result_fields
+                        'contact'=>(object) $contact_result_fields
                     );
                 }
                 else

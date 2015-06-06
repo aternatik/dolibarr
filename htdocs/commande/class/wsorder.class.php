@@ -125,51 +125,52 @@ class wsOrder extends DolWS
 
                         // Create order
                         $objectresp = array(
-                        'result'=>parent::array_to_object(array('result_code'=>'OK', 'result_label'=>'')),
-                        'order'=>array(
-                        'id' => $order->id,
-                        'ref' => $order->ref,
-                        'ref_client' => $order->ref_client,
-                        'ref_ext' => $order->ref_ext,
-                        'ref_int' => $order->ref_int,
-                        'thirdparty_id' => $order->socid,
-                        'status' => $order->statut,
+                            'result'=> (object) array('result_code'=>'OK', 'result_label'=>''),
+                            'order'=> array(
+                                'id' => $order->id,
+                                'ref' => $order->ref,
+                                'ref_client' => $order->ref_client,
+                                'ref_ext' => $order->ref_ext,
+                                'ref_int' => $order->ref_int,
+                                'thirdparty_id' => $order->socid,
+                                'status' => $order->statut,
 
-                        'total_net' => $order->total_ht,
-                        'total_vat' => $order->total_tva,
-                        'total_localtax1' => $order->total_localtax1,
-                        'total_localtax2' => $order->total_localtax2,
-                        'total' => $order->total_ttc,
-                        'project_id' => $order->fk_project,
+                                'total_net' => $order->total_ht,
+                                'total_vat' => $order->total_tva,
+                                'total_localtax1' => $order->total_localtax1,
+                                'total_localtax2' => $order->total_localtax2,
+                                'total' => $order->total_ttc,
+                                'project_id' => $order->fk_project,
 
-                        'date' => $order->date_commande?dol_print_date($order->date_commande,'dayrfc'):'',
-                        'date_creation' => $invoice->date_creation?dol_print_date($invoice->date_creation,'dayhourrfc'):'',
-                        'date_validation' => $invoice->date_validation?dol_print_date($invoice->date_creation,'dayhourrfc'):'',
-                        'date_modification' => $invoice->datem?dol_print_date($invoice->datem,'dayhourrfc'):'',
+                                'date' => $order->date?dol_print_date($order->date,'dayhourrfc'):  dol_now(),
+                               
+                                'date_validation' => $order->date_validation?dol_print_date($order->date_validation,'dayhourrfc'):'',
+                                //'date_modification' => $order->datem?dol_print_date($order->datem,'dayhourrfc'):'',
 
-                        'remise' => $order->remise,
-                        'remise_percent' => $order->remise_percent,
-                        'remise_absolue' => $order->remise_absolue,
+                                'remise' => $order->remise,
+                                'remise_percent' => $order->remise_percent,
+                                'remise_absolue' => $order->remise_absolue,
 
-                        'source' => $order->source,
-                        'facturee' => $order->facturee,
-                        'note_private' => $order->note_private,
-                        'note_public' => $order->note_public,
-                        'cond_reglement_id' => $order->cond_reglement_id,
-                        'cond_reglement_code' => $order->cond_reglement_code,
-                        'cond_reglement' => $order->cond_reglement,
-                        'mode_reglement_id' => $order->mode_reglement_id,
-                        'mode_reglement_code' => $order->mode_reglement_code,
-                        'mode_reglement' => $order->mode_reglement,
+                                'source' => $order->source,
+                                'facturee' => $order->facturee,
+                                'note_private' => $order->note_private,
+                                'note_public' => $order->note_public,
+                                'cond_reglement_id' => $order->cond_reglement_id,
+                                'cond_reglement_code' => $order->cond_reglement_code,
+                                'cond_reglement' => $order->cond_reglement,
+                                'mode_reglement_id' => $order->mode_reglement_id,
+                                'mode_reglement_code' => $order->mode_reglement_code,
+                                'mode_reglement' => $order->mode_reglement,
 
-                        'date_livraison' => $order->date_livraison,
-                        'fk_delivery_address' => $order->fk_delivery_address,
+                                'date_livraison' => $order->date_livraison,
+                                'fk_delivery_address' => $order->fk_delivery_address,
 
-                        'demand_reason_id' => $order->demand_reason_id,
-                        'demand_reason_code' => $order->demand_reason_code,
+                                'demand_reason_id' => $order->demand_reason_id,
+                                'demand_reason_code' => $order->demand_reason_code,
 
-                        'lines' => $linesresp
-                        ));
+                                'lines' => $linesresp
+                            )
+                        );
                     }
                 }
                 else
@@ -187,7 +188,7 @@ class wsOrder extends DolWS
 
         if ($error)
         {
-            $objectresp = array('result'=>array('result_code' => $errorcode, 'result_label' => $errorlabel));
+            $objectresp = array('result'=> (object) array('result_code' => $errorcode, 'result_label' => $errorlabel));
         }
 
         return $objectresp;
@@ -302,7 +303,7 @@ class wsOrder extends DolWS
                         'total' => $order->total_ttc,
                         'project_id' => $order->fk_project,
 
-                        'date' => $order->date_commande?dol_print_date($order->date_commande,'dayrfc'):'',
+                        'date' => $order->date?dol_print_date($order->date,'dayrfc'):'',
 
                         'remise' => $order->remise,
                         'remise_percent' => $order->remise_percent,
@@ -384,11 +385,11 @@ class wsOrder extends DolWS
         if (! $error)
         {
             $newobject=new Commande($db);
-            $newobject->socid=$order['thirdparty_id'];
+            $newobject->socid=$order['socid'];
             $newobject->type=$order['type'];
             $newobject->ref_ext=$order['ref_ext'];
-            $newobject->date=dol_stringtotime($order['date'],'dayrfc');
-            $newobject->date_lim_reglement=dol_stringtotime($order['date_due'],'dayrfc');
+            $newobject->date=$order['date'];
+            $newobject->date_lim_reglement=$order['date_due'];
             $newobject->note_private=$order['note_private'];
             $newobject->note_public=$order['note_public'];
             $newobject->statut=0;	// We start with status draft
@@ -397,7 +398,6 @@ class wsOrder extends DolWS
             $newobject->fk_delivery_address=$order['fk_delivery_address'];
             $newobject->cond_reglement_id=$order['cond_reglement_id'];
             $newobject->demand_reason_id=$order['demand_reason_id'];
-            $newobject->date_creation=$now;
 
             // Trick because nusoap does not store data with same structure if there is one or several lines
             $arrayoflines=array();
@@ -415,6 +415,8 @@ class wsOrder extends DolWS
                 $newline->tva_tx=$line['vat_rate'];
                 $newline->qty=$line['qty'];
                 $newline->price=$line['price'];
+                $newline->date_start=$line['date_start'];
+                $newline->date_end=$line['date_end'];
                 $newline->subprice=$line['unitprice'];
                 $newline->total_ht=$line['total_net'];
                 $newline->total_tva=$line['total_vat'];
@@ -449,7 +451,7 @@ class wsOrder extends DolWS
             {
                 dol_syslog("Webservice server_order:: order creation & validation succeeded, commit", LOG_DEBUG);
                 $db->commit();
-                $objectresp=array('result'=>array('result_code'=>'OK', 'result_label'=>''),'id'=>$newobject->id,'ref'=>$newobject->ref);
+                $objectresp=array('result'=>(object) array('result_code'=>'OK', 'result_label'=>''),'id'=>$newobject->id,'ref'=>$newobject->ref);
             }
             else
             {
@@ -464,7 +466,7 @@ class wsOrder extends DolWS
 
         if ($error)
         {
-            $objectresp = array('result'=>array('result_code' => $errorcode, 'result_label' => $errorlabel));
+            $objectresp = array('result'=>(object) array('result_code' => $errorcode, 'result_label' => $errorlabel));
         }
 
         return $objectresp;

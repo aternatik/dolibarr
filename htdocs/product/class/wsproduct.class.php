@@ -99,8 +99,8 @@ class wsProduct extends DolWS
 
                     // Create
                     $objectresp = array(
-                        'result'=>parent::array_to_object(array('result_code'=>'OK', 'result_label'=>'')),
-                        'product'=>array(
+                        'result'=>(object) array('result_code'=>'OK', 'result_label'=>''),
+                        'product'=> (object) array(
                             'id' => $product->id,
                             'ref' => $product->ref,
                             'ref_ext' => $product->ref_ext,
@@ -136,7 +136,8 @@ class wsProduct extends DolWS
                             'import_key' => $product->import_key,
                             'dir' => $pdir,
                             'images' => $product->liste_photos($dir,$nbmax=10)
-                    ));
+                        )
+                    );
                 }
                 else
                 {
